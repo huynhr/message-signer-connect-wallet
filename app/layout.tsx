@@ -14,7 +14,7 @@ import { goerli, sepolia, mainnet } from "wagmi/chains";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const chains = [goerli];
+const chains = [goerli, sepolia, mainnet];
 const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || "";
 
 const { publicClient } = configureChains(chains, [w3mProvider({ projectId })]);

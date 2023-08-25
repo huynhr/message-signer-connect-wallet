@@ -2,16 +2,29 @@
 
 import { Web3Button } from "@web3modal/react";
 import { useEffect, useState } from "react";
-import { useAccount, useSignMessage } from "wagmi";
+import { useAccount, useSignMessage, useWalletClient } from "wagmi";
+import { ethers } from "ethers";
+import { useEthersSigner } from "./providers";
 
 export default function Home() {
-  const [nonce, setNonce] = useState("");
+  const [message, setMessage] = useState("");
   const { address } = useAccount();
-  const { data, error, isLoading, signMessage, variables } = useSignMessage();
+  // const { data, error, isLoading, signMessage, variables } = useSignMessage();
+  const signer = useEthersSigner({ chainId: 5 });
   const [copied, setCopied] = useState(false);
+  const [signature, setSignature] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSignMessage = async () => {
-    signMessage({ message: nonce });
+    setIsLoading(true);
+    const payload = ethers.utils.arrayify(message);
+
+    console.log({ payload, message });
+    const signatureResponse = await signer?.signMessage(payload);
+
+    if (signatureResponse) setSignature(signatureResponse);
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -28,8 +41,8 @@ export default function Home() {
       <div className="text-lg font-bold">{address}</div>
       <div className="flex items-center justify-center space-x-2">
         <input
-          value={nonce}
-          onChange={(e) => setNonce(e.target.value)}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
           className="h-10"
         />
         <button
@@ -39,7 +52,7 @@ export default function Home() {
           {isLoading ? "loading..." : "sign message"}
         </button>
       </div>
-      {data && (
+      {signature && (
         <div className="relative">
           {copied && (
             <div className="absolute -top-[45px] left-[95%] bg-green-500 text-white p-2 rounded-md uppercase">
@@ -50,11 +63,11 @@ export default function Home() {
             className="cursor-pointer hover:opacity-50"
             onClick={() =>
               navigator.clipboard
-                .writeText(data as string)
+                .writeText(signature as string)
                 .then(() => setCopied(true))
             }
           >
-            {data}
+            {signature}
           </div>
         </div>
       )}
